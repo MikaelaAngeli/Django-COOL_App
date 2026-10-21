@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}BudgetBuddy{% endblock %}</title>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const palettes = {
+        "default": { name: "Default Theme", colors: ["#197563", "#2e9b7f", "#e8f7f2", "#e2f6ef", "#31a087"], accent: "#31a087" },
+        "ocean-pearl": { name: "Ocean Pearl Delight", colors: ["#006f78", "#83c4bd", "#eaf5f7", "#ffd8ce", "#e89274"], accent: "#087880" },
+        "sunny-beach": { name: "Sunny Beach Day", colors: ["#264b57", "#259a8b", "#e8c76d", "#f3a15d", "#e76e50"], accent: "#187d78" },
+        "olive-garden": { name: "Olive Garden Feast", colors: ["#59683a", "#28391e", "#fffbe8", "#dda85c", "#b96b25"], accent: "#58683c" },
+        "summer-ocean": { name: "Summer Ocean Breeze", colors: ["#e93243", "#f2f7eb", "#a6d9da", "#477e9b", "#203a5d"], accent: "#b9273c" },
+        "refreshing-summer": { name: "Refreshing Summer Fun", colors: ["#8ac4dc", "#209db6", "#003d54", "#ffb900", "#ff8300"], accent: "#087f9c" },
+        "pastel-dreamland": { name: "Pastel Dreamland", colors: ["#cbb1d7", "#f8bfd5", "#f7a9c6", "#b9dcf7", "#9dcdf6"], accent: "#85628f" },
+        "golden-fields": { name: "Golden Summer Fields", colors: ["#cbd4ad", "#e8edc9", "#fffbe0", "#f7ebcc", "#d2a271"], accent: "#71804b" },
+        "black-gold": { name: "Black & Gold Elegance", colors: ["#050505", "#14233e", "#ffa600", "#e5e5e5", "#ffffff"], accent: "#a86b00" },
+        "muted-earth": { name: "Muted Earthy Tones", colors: ["#ffccb5", "#ffb09e", "#e3969a", "#b58291", "#6e6875"], accent: "#a65f6e" },
+        "autumn-glow": { name: "Warm Autumn Glow", colors: ["#003448", "#d5222b", "#f57900", "#ffbf45", "#e9e2b9"], accent: "#b72c28" },
+        "vibrant-fiesta": { name: "Vibrant Color Fiesta", colors: ["#ffbd00", "#ff4b0b", "#f50069", "#8533e9", "#3780f5"], accent: "#7831d7" },
+        "cool-coastal": { name: "Cool Coastal Vibes", colors: ["#2c2d43", "#8996aa", "#edf3f4", "#ed2544", "#d5002e"], accent: "#41455c" },
+        "neutral-harmony": { name: "Neutral Harmony Bliss", colors: ["#f4f0dc", "#e0795c", "#45485f", "#81b29a", "#f1cb91"], accent: "#596457" },
+        "forest-hues": { name: "Earthy Forest Hues", colors: ["#d9d8cf", "#a5b191", "#58815d", "#385b42", "#304c41"], accent: "#426b4a" },
+        "fiery-ocean": { name: "Fiery Ocean", colors: ["#850000", "#c20f22", "#fff0d5", "#00334b", "#6399b8"], accent: "#a71022" },
+        "soft-lavender": { name: "Soft Lavender", colors: ["#24243d", "#484a65", "#9c8f9a", "#c9afa9", "#f2e9e5"], accent: "#6a5c77" },
+        "soft-sand": { name: "Soft Sand", colors: ["#ecece8", "#d3c9bd", "#f4e9dd", "#e2d5ca", "#d2b8aa"], accent: "#8a6a58" },
+        "ocean-breeze": { name: "Ocean Breeze", colors: ["#06065f", "#0879b2", "#00afd0", "#88dcea", "#c3eef4"], accent: "#0879a4" },
+        "peachy-delight": { name: "Peachy Delight", colors: ["#d7e2de", "#ffe4d8", "#ffc6d2", "#f1a9b9", "#a28691"], accent: "#a65f73" },
+        "earthy-green": { name: "Earthy Green", colors: ["#c9d2c4", "#81a78e", "#50786f", "#345354", "#2e3d44"], accent: "#456e64" },
+        "dark-sunset": { name: "Dark Sunset", colors: ["#315c67", "#fff2ad", "#e5a23c", "#a22b30", "#500f12"], accent: "#9a3e36" },
+        "pastel-bliss": { name: "Pastel Bliss", colors: ["#ffb4a9", "#fbd3cc", "#f7e9e6", "#f8dbc5", "#ffc998"], accent: "#b96350" },
+        "golden-twilight": { name: "Golden Twilight", colors: ["#030b1a", "#002d56", "#ffb900", "#ff8400", "#ffe100"], accent: "#b87800" }
+      };
+      const applyPalette = (paletteId) => {
+        const palette = palettes[paletteId] || palettes["default"];
+        root.dataset.palette = palettes[paletteId] ? paletteId : "default";
+        root.style.setProperty("--app-primary", palette.accent);
+        const deep = palette.accent.match(/[A-Fa-f0-9]{2}/g)
+          .map((channel) => Math.round(parseInt(channel, 16) * .68).toString(16).padStart(2, "0"))
+          .join("");
+        root.style.setProperty("--app-deep", `#${deep}`);
+        const rgb = palette.accent.match(/[A-Fa-f0-9]{2}/g).map((channel) => parseInt(channel, 16));
+        root.style.setProperty("--app-primary-rgb", rgb.join(", "));
+      };
+      let theme = "dark";
+      let palette = "default";
+      try {
+        theme = localStorage.getItem("budgetbuddy-theme") || "dark";
+        palette = localStorage.getItem("budgetbuddy-palette") || "default";
+      } catch {}
+      root.dataset.theme = theme;
+      applyPalette(palette);
+      window.budgetBuddyPalettes = palettes;
+      window.budgetBuddyApplyPalette = applyPalette;
+    })();
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --app-primary: #168374;
+      --app-deep: #075e59;
+      --app-soft: color-mix(in srgb, var(--app-primary) 14%, white);
+      --app-page: #f4f7f8;
+      --app-surface: #fff;
+      --app-text: #1d2939;
+      --app-muted: #667085;
+      --app-border: #e5eaee;
+      --app-primary-rgb: 22, 131, 116;
+      --bs-primary: var(--app-primary);
+      --bs-primary-rgb: var(--app-primary-rgb);
+      --bs-success: var(--app-primary);
+      --bs-success-rgb: var(--app-primary-rgb);
+      --bs-link-color: var(--app-primary);
+      --bs-link-hover-color: var(--app-deep);
+      --bs-body-color: #1d2939;
+      --bs-body-bg: #f4f7f8;
+      --bs-border-color: var(--app-border);
+    }
+    body.bg-light { background-color: var(--app-page) !important; color: var(--app-text); }
+    a { color: var(--app-primary); }
+    a:hover { color: var(--app-deep); }
+    .btn-primary {
+      --bs-btn-color: #fff;
+      --bs-btn-bg: var(--app-primary);
+      --bs-btn-border-color: var(--app-primary);
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: var(--app-deep);
+      --bs-btn-hover-border-color: var(--app-deep);
+      --bs-btn-active-bg: var(--app-deep);
+      --bs-btn-active-border-color: var(--app-deep);
+      --bs-btn-focus-shadow-rgb: var(--app-primary-rgb);
+    }
+    .btn-outline-primary {
+      --bs-btn-color: var(--app-primary);
+      --bs-btn-border-color: var(--app-primary);
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: var(--app-primary);
+      --bs-btn-hover-border-color: var(--app-primary);
+      --bs-btn-focus-shadow-rgb: var(--app-primary-rgb);
+      --bs-btn-active-bg: var(--app-deep);
+      --bs-btn-active-border-color: var(--app-deep);
+    }
+    .navbar.bg-primary { background-color: var(--app-deep) !important; }
+    .text-primary, .text-success { color: var(--app-primary) !important; }
+    .bg-primary, .bg-success { background-color: var(--app-primary) !important; }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--app-primary);
+      box-shadow: 0 0 0 .25rem rgba(var(--app-primary-rgb), .18);
+    }
+    body { padding-bottom: 4.5rem; }
+    .bottom-nav { padding-bottom: max(.5rem, env(safe-area-inset-bottom)); }
+    .progress { height: .65rem; }
+    .dashboard-page { background: var(--app-page) !important; color: var(--app-text); }
+    .dashboard-sidebar {
+      background: var(--app-surface);
+      border-right: 1px solid var(--app-border);
+      bottom: 0;
+      left: 0;
+      position: fixed;
+      top: 0;
+      width: 242px;
+      z-index: 1030;
+    }
+    .dashboard-sidebar .nav-link { border-radius: .7rem; color: var(--app-muted); padding: .85rem 1rem; }
+    .dashboard-sidebar .nav-link.active,
+    .dashboard-sidebar .nav-link:hover { background: var(--app-soft); color: var(--app-primary); }
+    .dashboard-workspace { margin-left: 242px; min-height: 100vh; }
+    .dashboard-content { margin: 0 auto; max-width: 1280px; padding: 28px 42px 48px; }
+    .dashboard-card { background: var(--app-surface); border: 1px solid var(--app-border); border-radius: 1rem; box-shadow: 0 12px 28px rgba(31, 51, 65, .035); }
+    .dashboard-eyebrow { color: #98a7b8; font-size: .68rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    .dashboard-hero { background: linear-gradient(110deg, var(--app-deep), var(--app-primary)); border-radius: 1rem; color: #fff; min-height: 205px; overflow: hidden; position: relative; }
+    .dashboard-hero::after { border: 1px solid rgba(255,255,255,.12); border-radius: 50%; content: ""; height: 370px; position: absolute; right: 10%; top: -82px; width: 370px; }
+    .dashboard-hero::before { border: 1px solid rgba(255,255,255,.12); border-radius: 50%; content: ""; height: 260px; position: absolute; right: 14%; top: -28px; width: 260px; }
+    .dashboard-stat { min-height: 115px; }
+    .dashboard-quick-form label { color: var(--app-muted); font-size: .77rem; }
+    .dashboard-quick-form .form-control,
+    .dashboard-quick-form .form-select { background: #fbfcfd; border-color: #e0e7ec; min-height: 42px; }
+    .dashboard-quick-form .form-control:focus,
+    .dashboard-quick-form .form-select:focus { border-color: var(--app-primary); box-shadow: 0 0 0 .2rem rgba(var(--app-primary-rgb),.14); }
+    .dashboard-save { background: var(--app-primary); border-color: var(--app-primary); }
+    .dashboard-save:hover { background: var(--app-deep); border-color: var(--app-deep); }
+    .dashboard-bottom-nav { padding-bottom: max(.4rem, env(safe-area-inset-bottom)); }
+    .palette-mark { background: var(--app-soft); color: var(--app-primary); }
+    .palette-option { border: 1px solid var(--app-border); color: var(--app-text); background: var(--app-surface); }
+    .palette-option:hover { border-color: var(--app-primary); color: var(--app-text); }
+    .palette-option[aria-pressed="true"] { border: 2px solid var(--app-primary); box-shadow: 0 0 0 .2rem rgba(var(--app-primary-rgb), .15); }
+    .palette-swatches { display: flex; height: 2.4rem; overflow: hidden; border-radius: .45rem; }
+    .palette-swatches span { flex: 1; }
+    .palette-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .65rem; }
+    html[data-theme="dark"] .palette-option { background: var(--app-surface); border-color: var(--app-border); color: var(--app-text); }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --app-page: #111b1c;
+      --app-surface: #1c292b;
+      --app-text: #e5edf0;
+      --app-muted: #9eafb2;
+      --app-border: #344346;
+      --app-soft: color-mix(in srgb, var(--app-primary) 22%, var(--app-surface));
+      --bs-body-color: #e5edf0;
+      --bs-body-color-rgb: 229, 237, 240;
+      --bs-body-bg: #111b1c;
+      --bs-body-bg-rgb: 17, 27, 28;
+      --bs-secondary-color: #9eafb2;
+      --bs-secondary-color-rgb: 158, 175, 178;
+      --bs-tertiary-bg: #1c292b;
+      --bs-tertiary-color: #bcc9ca;
+      --bs-border-color: #344346;
+      --bs-emphasis-color: #f4f8f8;
+      --bs-emphasis-color-rgb: 244, 248, 248;
+      --bs-link-color: var(--app-primary);
+      --bs-link-hover-color: var(--app-soft);
+      --bs-form-control-bg: #1c292b;
+      --bs-form-control-color: #e5edf0;
+    }
+    html[data-theme="dark"] body.bg-light,
+    html[data-theme="dark"] .dashboard-page { background: var(--app-page) !important; color: var(--app-text) !important; }
+    html[data-theme="dark"] .dashboard-sidebar,
+    html[data-theme="dark"] .dashboard-card,
+    html[data-theme="dark"] .card,
+    html[data-theme="dark"] .list-group-item,
+    html[data-theme="dark"] .bg-white { background-color: var(--app-surface) !important; color: var(--app-text); }
+    html[data-theme="dark"] .dashboard-sidebar,
+    html[data-theme="dark"] .dashboard-card,
+    html[data-theme="dark"] .card,
+    html[data-theme="dark"] .list-group-item,
+    html[data-theme="dark"] .border,
+    html[data-theme="dark"] .border-top,
+    html[data-theme="dark"] .border-bottom { border-color: #344346 !important; }
+    html[data-theme="dark"] .dashboard-card { box-shadow: 0 12px 28px rgba(0, 0, 0, .14); }
+    html[data-theme="dark"] .dashboard-sidebar .nav-link { color: #aab9bb; }
+    html[data-theme="dark"] .dashboard-sidebar .nav-link.active,
+    html[data-theme="dark"] .dashboard-sidebar .nav-link:hover { background: var(--app-soft); color: var(--app-primary); }
+    html[data-theme="dark"] .dashboard-eyebrow { color: #93a7a9; }
+    html[data-theme="dark"] .text-dark,
+    html[data-theme="dark"] .table,
+    html[data-theme="dark"] .calendar-day-number { color: #e5edf0 !important; }
+    html[data-theme="dark"] .text-secondary { color: #9eafb2 !important; }
+    html[data-theme="dark"] .table-light,
+    html[data-theme="dark"] .table-light > th,
+    html[data-theme="dark"] .table-light > td { --bs-table-bg: #243235; --bs-table-color: #e5edf0; }
+    html[data-theme="dark"] .table { --bs-table-bg: #1c292b; --bs-table-color: #e5edf0; --bs-table-hover-bg: #263638; --bs-table-hover-color: #f4f8f8; }
+    html[data-theme="dark"] .form-control,
+    html[data-theme="dark"] .form-select { background-color: #1c292b; border-color: #405255; color: #e5edf0; }
+    html[data-theme="dark"] .form-control::placeholder { color: #8fa1a3; }
+    html[data-theme="dark"] .form-control:disabled,
+    html[data-theme="dark"] .form-select:disabled { background-color: #243235; }
+    html[data-theme="dark"] .bg-light { background-color: #243235 !important; }
+    html[data-theme="dark"] .btn-outline-secondary { --bs-btn-color: #c0cdcf; --bs-btn-border-color: #536467; --bs-btn-hover-bg: #344548; --bs-btn-hover-border-color: #687d80; --bs-btn-hover-color: #fff; }
+    html[data-theme="dark"] .page-link { background-color: #1c292b; border-color: #344346; color: #7ed7bd; }
+    html[data-theme="dark"] .page-item.disabled .page-link { background-color: #172224; color: #849799; }
+    html[data-theme="dark"] .calendar-day { background: #1c292b; border-color: #344346; }
+    html[data-theme="dark"] .calendar-day-empty { background: transparent; border-color: transparent; }
+    html[data-theme="dark"] .calendar-day-today { background: var(--app-soft); border-color: var(--app-primary); }
+    html[data-theme="dark"] .calendar-weekdays { color: #93a7a9; }
+    html[data-theme="dark"] .dashboard-quick-form .form-control,
+    html[data-theme="dark"] .dashboard-quick-form .form-select { background: #172224; border-color: #405255; }
+    html[data-theme="dark"] .dashboard-quick-form label { color: #b3c1c3; }
+    html[data-theme="dark"] .alert { border-color: #405255; }
+    .theme-toggle { white-space: nowrap; }
+    @media (min-width: 768px) { body { padding-bottom: 0; } }
+    @media (max-width: 767.98px) {
+      .dashboard-sidebar { display: none; }
+      .dashboard-workspace { margin-left: 0; }
+      .dashboard-content { padding: 22px 16px 32px; }
+      .dashboard-hero { min-height: 180px; }
+    }
+  </style>
+</head>
+<body class="bg-light{% if user.is_authenticated %} dashboard-page{% endif %}">
+  {% if user.is_authenticated %}
+  <aside class="dashboard-sidebar d-none d-md-flex flex-column p-3">
+    <a class="navbar-brand fw-bold text-dark d-flex align-items-center gap-2 px-2 py-3 mb-4" href="{% url 'expense_list' %}">
+      <span class="palette-mark rounded-3 px-2 py-1">₱</span> BudgetBuddy
+    </a>
+    <nav class="nav nav-pills flex-column gap-2">
+      <a class="nav-link {% if request.resolver_match.url_name == 'expense_list' %}active{% endif %}" href="{% url 'expense_list' %}"><span class="me-3">⌂</span>Overview</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'transaction_list' or request.resolver_match.url_name == 'expense_detail' or request.resolver_match.url_name == 'expense_update' or request.resolver_match.url_name == 'expense_delete' or request.resolver_match.url_name == 'income_detail' or request.resolver_match.url_name == 'income_update' or request.resolver_match.url_name == 'income_delete' %}active{% endif %}" href="{% url 'transaction_list' %}"><span class="me-3">↕</span>Transactions</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'insights' %}active{% endif %}" href="{% url 'insights' %}"><span class="me-3">◷</span>Insights</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'budget_update' %}active{% endif %}" href="{% url 'budget_update' %}"><span class="me-3">▤</span>Monthly budget</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'profile' %}"><span class="me-3">◉</span>Profile</a>
+    </nav>
+    <div class="mt-auto">
+      <div class="palette-mark rounded-4 p-3 mb-3">
+        <div class="text-primary mb-2">✦</div>
+        <div class="fw-semibold small">Small steps, big wins.</div>
+        <div class="text-secondary small">Track every peso and make your goals feel closer.</div>
+      </div>
+      <div class="text-center text-secondary small py-2">Personal finance, made simple</div>
+    </div>
+  </aside>
+  {% endif %}
+  <div class="{% if user.is_authenticated %}dashboard-workspace{% endif %}">
+  {% if not user.is_authenticated %}
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="{% url 'expense_list' %}">BudgetBuddy</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <div class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+          <a class="nav-link" href="{% url 'login' %}">Login</a>
+          <a class="btn btn-light btn-sm ms-lg-2" href="{% url 'register' %}">Register</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  {% endif %}
+  <main class="{% if user.is_authenticated %}dashboard-content{% else %}container py-4{% endif %}">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% if user.is_authenticated and not dashboard_layout %}
+    <header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div>
+        <div class="dashboard-eyebrow mb-2">Personal finance</div>
+        <h1 class="h2 mb-0">Good to see you<span class="text-success">.</span></h1>
+      </div>
+      <a class="rounded-pill bg-white border px-3 py-2 d-flex align-items-center gap-2 small text-decoration-none text-dark" href="{% url 'profile' %}">
+        <span class="palette-mark rounded-circle d-inline-flex align-items-center justify-content-center fw-semibold" style="width:2rem;height:2rem">BB</span>
+        {{ user.first_name|default:user.username }}
+      </a>
+    </header>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  </div>
+  {% if user.is_authenticated %}
+  <nav class="dashboard-bottom-nav navbar bg-white border-top fixed-bottom d-md-none" aria-label="Mobile navigation">
+    <div class="container-fluid justify-content-around">
+      <a class="nav-link text-center small {% if request.resolver_match.url_name == 'expense_list' %}text-success{% endif %}" href="{% url 'expense_list' %}">⌂<br>Overview</a>
+      <a class="nav-link text-center small {% if request.resolver_match.url_name == 'transaction_list' or request.resolver_match.url_name == 'expense_detail' or request.resolver_match.url_name == 'expense_update' or request.resolver_match.url_name == 'expense_delete' or request.resolver_match.url_name == 'income_detail' or request.resolver_match.url_name == 'income_update' or request.resolver_match.url_name == 'income_delete' %}text-success{% endif %}" href="{% url 'transaction_list' %}">↕<br>Transactions</a>
+      <a class="nav-link text-center small {% if request.resolver_match.url_name == 'insights' %}text-success{% endif %}" href="{% url 'insights' %}">◷<br>Insights</a>
+      <a class="nav-link text-center small {% if request.resolver_match.url_name == 'budget_update' %}text-success{% endif %}" href="{% url 'budget_update' %}">▤<br>Budget</a>
+      <a class="nav-link text-center small {% if request.resolver_match.url_name == 'profile' %}text-success{% endif %}" href="{% url 'profile' %}">◉<br>Profile</a>
+    </div>
+  </nav>
+  {% endif %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (() => {
+      const buttons = document.querySelectorAll("[data-theme-toggle]");
+      const updateButtons = () => {
+        const isDark = document.documentElement.dataset.theme === "dark";
+        buttons.forEach((button) => {
+          button.textContent = isDark ? "☀️ Switch to light mode" : "🌙 Switch to dark mode";
+          button.setAttribute("aria-pressed", String(isDark));
+        });
+      };
+
+      buttons.forEach((button) => button.addEventListener("click", () => {
+        const theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = theme;
+        try {
+          localStorage.setItem("budgetbuddy-theme", theme);
+        } catch {}
+        updateButtons();
+      }));
+      updateButtons();
+
+      const picker = document.querySelector("[data-palette-picker]");
+      if (picker && window.budgetBuddyPalettes) {
+        const selectedPalette = document.documentElement.dataset.palette;
+        Object.entries(window.budgetBuddyPalettes).forEach(([id, palette]) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "palette-option rounded-3 p-2 text-start";
+          button.dataset.palette = id;
+          button.setAttribute("aria-label", `Use ${palette.name} color palette`);
+          button.setAttribute("aria-pressed", String(id === selectedPalette));
+          button.innerHTML = `<span class="palette-swatches mb-2">${palette.colors.map((color) => `<span style="background:${color}"></span>`).join("")}</span><span class="small fw-semibold">${palette.name}</span>`;
+          button.addEventListener("click", () => {
+            document.querySelectorAll("[data-palette-picker] [data-palette]").forEach((option) => {
+              option.setAttribute("aria-pressed", String(option === button));
+            });
+            window.budgetBuddyApplyPalette(id);
+            try {
+              localStorage.setItem("budgetbuddy-palette", id);
+            } catch {}
+          });
+          picker.append(button);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

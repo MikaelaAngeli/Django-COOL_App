@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Expense #{{ expense.pk }} | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+  <div><a href="{% url 'expense_list' %}" class="text-decoration-none">&larr; Back to expenses</a><h1 class="h2 mt-2">Expense #{{ expense.pk }}</h1></div>
+  <div class="d-flex gap-2"><a class="btn btn-outline-primary" href="{% url 'expense_update' expense.pk %}">Edit</a><a class="btn btn-outline-danger" href="{% url 'expense_delete' expense.pk %}">Delete</a></div>
+</div>
+<div class="card border-0 shadow-sm"><div class="card-body">
+  <dl class="row mb-0">
+    <dt class="col-sm-4">Amount</dt><dd class="col-sm-8 fs-5 fw-semibold">₱{{ expense.amount|floatformat:2 }}</dd>
+    <dt class="col-sm-4">Category</dt><dd class="col-sm-8">{{ expense.get_category_display }}</dd>
+    <dt class="col-sm-4">Description</dt><dd class="col-sm-8">{{ expense.description|linebreaksbr }}</dd>
+    <dt class="col-sm-4">Date</dt><dd class="col-sm-8">{{ expense.date|date:"F j, Y" }}</dd>
+    <dt class="col-sm-4">Payment method</dt><dd class="col-sm-8">{{ expense.get_payment_method_display }}</dd>
+  </dl>
+</div></div>
+{% endblock %}

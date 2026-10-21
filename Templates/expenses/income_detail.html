@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Income #{{ income.pk }} | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+  <div><a href="{% url 'transaction_list' %}" class="text-decoration-none">&larr; Back to transactions</a><h1 class="h2 mt-2">Income #{{ income.pk }}</h1></div>
+  <div class="d-flex gap-2"><a class="btn btn-outline-primary" href="{% url 'income_update' income.pk %}">Edit</a><a class="btn btn-outline-danger" href="{% url 'income_delete' income.pk %}">Delete</a></div>
+</div>
+<div class="card border-0 shadow-sm"><div class="card-body"><dl class="row mb-0">
+  <dt class="col-sm-4">Amount</dt><dd class="col-sm-8 fs-5 fw-semibold text-success">₱{{ income.amount|floatformat:2 }}</dd>
+  <dt class="col-sm-4">Source</dt><dd class="col-sm-8">{{ income.get_source_display }}</dd>
+  <dt class="col-sm-4">Description</dt><dd class="col-sm-8">{{ income.description }}</dd>
+  <dt class="col-sm-4">Date</dt><dd class="col-sm-8">{{ income.date|date:"F j, Y" }}</dd>
+  <dt class="col-sm-4">Payment method</dt><dd class="col-sm-8">{{ income.get_payment_method_display }}</dd>
+</dl></div></div>
+{% endblock %}

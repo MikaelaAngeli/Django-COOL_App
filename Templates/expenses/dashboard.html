@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Overview | BudgetBuddy{% endblock %}
+{% block content %}
+<header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <div class="dashboard-eyebrow mb-2">Personal finance</div>
+    <h1 class="h2 mb-0">Good to see you<span class="text-success">.</span></h1>
+  </div>
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <div class="rounded-pill bg-white border px-3 py-2 d-flex align-items-center gap-2 small">
+      <span class="palette-mark rounded-circle d-inline-flex align-items-center justify-content-center fw-semibold" style="width:2rem;height:2rem">BB</span>
+      {{ user.first_name|default:user.username }}
+    </div>
+    <button class="btn btn-outline-secondary btn-sm theme-toggle" type="button" data-theme-toggle aria-pressed="false">☀️ Switch to light mode</button>
+  </div>
+</header>
+
+<section class="dashboard-hero d-flex align-items-center px-4 px-lg-5 py-4 mb-3" aria-label="Total spending">
+  <div class="position-relative" style="z-index:1">
+    <div class="text-white-50 small fw-semibold text-uppercase mb-3">Total spent</div>
+    <div class="display-4 fw-bold mb-2">₱{{ total_spent|floatformat:2 }}</div>
+    <div class="text-white-50">Across {{ all_expense_count }} expense{{ all_expense_count|pluralize }}</div>
+  </div>
+  <div class="position-absolute top-50 start-50 translate-middle d-none d-lg-flex rounded-circle border border-light border-opacity-25 align-items-center justify-content-center" style="width:120px;height:120px;font-size:2rem;z-index:1">₱</div>
+  <div class="ms-auto d-none d-lg-block position-relative pe-2" style="z-index:1">
+    <div class="fs-4 mb-2">✦</div>
+    <div class="fw-semibold">Keep going!</div>
+    <div class="small text-white-50">{% if all_expense_count %}You’re building great money habits.{% else %}Your spending story starts here.{% endif %}</div>
+  </div>
+</section>
+
+<section class="row g-3 mb-4" aria-label="Spending summary">
+  <div class="col-12 col-md-4">
+    <div class="dashboard-card dashboard-stat p-3 p-lg-4 h-100">
+      <div class="d-flex justify-content-between"><div class="dashboard-eyebrow">This month</div><span class="palette-mark rounded-3 px-2 py-1">↗</span></div>
+      <div class="fs-4 fw-semibold mt-2">₱{{ expense_total|floatformat:2 }}</div>
+      <div class="small text-secondary mt-1">{{ current_month_label }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="dashboard-card dashboard-stat p-3 p-lg-4 h-100">
+      <div class="d-flex justify-content-between"><div class="dashboard-eyebrow">Transactions</div><span class="rounded-3 px-2 py-1" style="background:#fff0e8;color:#e69054">#</span></div>
+      <div class="fs-4 fw-semibold mt-2">{{ all_transaction_count }}</div>
+      <div class="small text-secondary mt-1">All recorded activity</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="dashboard-card dashboard-stat p-3 p-lg-4 h-100">
+      <div class="d-flex justify-content-between"><div class="dashboard-eyebrow">Top category</div><span class="rounded-3 px-2 py-1" style="background:#f1ebff;color:#8066c9">◒</span></div>
+      <div class="fs-4 fw-semibold mt-2">{% if top_category %}{{ top_category.label }}{% else %}No category yet{% endif %}</div>
+      <div class="small text-secondary mt-1">By total spending</div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-3 mb-3">
+  <div class="col-12 col-lg-6">
+    <div class="dashboard-card p-4 h-100" style="min-height:420px">
+      <div class="d-flex justify-content-between align-items-start">
+        <div><div class="dashboard-eyebrow mb-1">Breakdown</div><h2 class="h5 mb-0">Where your money goes</h2></div>
+        <span class="badge rounded-pill text-secondary fw-normal" style="background:#f3f6f8">All time</span>
+      </div>
+      {% if category_totals %}
+      <div class="mt-4">
+        {% for category in category_totals %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between gap-2 small mb-1"><span>{{ category.label }}</span><span class="text-secondary">₱{{ category.total|floatformat:2 }} · {{ category.percentage|floatformat:1 }}%</span></div>
+          <div class="progress"><div class="progress-bar" role="progressbar" style="width:{{ category.percentage }}%;background:var(--app-primary)" aria-valuenow="{{ category.percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ category.label }} spending"></div></div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="h-75 d-flex flex-column align-items-center justify-content-center text-center py-5">
+        <div class="text-success mb-3">◌</div>
+        <div class="fw-medium">No spending categories yet</div>
+        <p class="small text-secondary mb-0 mt-2">Add your first expense to see your breakdown.</p>
+      </div>
+      {% endif %}
+      <a class="small text-decoration-none d-inline-block mt-2" href="{% url 'insights' %}">View insights →</a>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="dashboard-card p-4 h-100">
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div><div class="dashboard-eyebrow mb-1">Quick action</div><h2 class="h5 mb-0">Add an expense</h2></div>
+        <span class="palette-mark rounded-3 px-2 py-1">＋</span>
+      </div>
+      <form method="post" class="dashboard-quick-form" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label" for="{{ quick_form.amount.id_for_label }}">Amount</label>
+            {{ quick_form.amount }}
+            {% for error in quick_form.amount.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="{{ quick_form.category.id_for_label }}">Category</label>
+            {{ quick_form.category }}
+            {% for error in quick_form.category.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="{{ quick_form.description.id_for_label }}">Description</label>
+            {{ quick_form.description }}
+            {% for error in quick_form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="{{ quick_form.date.id_for_label }}">Date</label>
+            {{ quick_form.date }}
+            {% for error in quick_form.date.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="{{ quick_form.payment_method.id_for_label }}">Payment method</label>
+            {{ quick_form.payment_method }}
+            {% for error in quick_form.payment_method.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+        {% if quick_form.non_field_errors %}<div class="text-danger small mt-2">{{ quick_form.non_field_errors }}</div>{% endif %}
+        <button class="btn btn-primary dashboard-save w-100 mt-3 py-2" type="submit">Save expense <span class="ms-2">→</span></button>
+      </form>
+      {% if budget %}
+      <div class="small text-secondary mt-3">Monthly budget: ₱{{ budget_amount|floatformat:2 }} · <a href="{% url 'budget_update' %}?month={{ period|date:'Y-m' }}">Manage</a></div>
+      {% else %}
+      <div class="small text-secondary mt-3"><a href="{% url 'budget_update' %}?month={{ period|date:'Y-m' }}">Set a monthly budget</a> to track your goals.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-card p-4">
+  <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+    <div><div class="dashboard-eyebrow mb-1">Activity</div><h2 class="h5 mb-0">Recent transactions</h2></div>
+    <a class="badge rounded-pill text-secondary text-decoration-none fw-normal" style="background:#f3f6f8" href="{% url 'transaction_list' %}">{{ all_transaction_count }} total</a>
+  </div>
+  {% if recent_rows %}
+    {% for row in recent_rows %}
+    <div class="d-flex flex-wrap align-items-center gap-3 py-3 {% if not forloop.last %}border-bottom{% endif %}">
+      <div class="palette-mark rounded-3 d-flex align-items-center justify-content-center" style="width:2.5rem;height:2.5rem">{{ row.label|first }}</div>
+      <div class="flex-grow-1">
+        <a href="{% url row.detail_url row.record.pk %}" class="fw-semibold text-dark text-decoration-none">{{ row.label }}</a>
+        <div class="small text-secondary">{{ row.record.description|truncatechars:55 }} · {{ row.record.date|date:"F j, Y" }} · {{ row.record.get_payment_method_display }}</div>
+      </div>
+      <div class="fw-semibold text-nowrap {% if row.kind == 'income' %}text-success{% endif %}">{% if row.kind == "income" %}+{% else %}−{% endif %}₱{{ row.record.amount|floatformat:2 }}</div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-secondary" href="{% url row.edit_url row.record.pk %}">Edit</a>
+        <a class="btn btn-sm btn-outline-danger" href="{% url row.delete_url row.record.pk %}">Delete</a>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="d-flex align-items-center gap-3 py-3">
+    <div class="palette-mark rounded-3 d-flex align-items-center justify-content-center" style="width:2.5rem;height:2.5rem">✦</div>
+    <div><div class="fw-medium">Your activity will appear here</div><div class="small text-secondary">Once you add an expense, you’ll be able to keep an eye on every purchase.</div></div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

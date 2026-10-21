@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Delete expense | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-7">
+  <div class="card border-0 shadow-sm"><div class="card-body p-4">
+    <h1 class="h3">Delete expense?</h1>
+    <p>Are you sure you want to delete expense #{{ expense.pk }} for <strong>₱{{ expense.amount|floatformat:2 }}</strong> ({{ expense.get_category_display }})? This cannot be undone.</p>
+    <form method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Yes, delete</button> <a class="btn btn-outline-secondary" href="{% url 'expense_detail' expense.pk %}">Cancel</a></form>
+  </div></div>
+</div></div>
+{% endblock %}

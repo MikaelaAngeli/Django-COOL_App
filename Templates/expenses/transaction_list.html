@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Transactions | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div><h1 class="h2 mb-1">Transactions</h1><p class="text-secondary mb-0">Search, filter, and manage your income and expenses.</p></div>
+  <div class="d-flex gap-2"><a class="btn btn-outline-primary" href="{% url 'income_create' %}">＋ Income</a><a class="btn btn-primary" href="{% url 'expense_create' %}">＋ Expense</a></div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-sm-6"><div class="card border-0 shadow-sm"><div class="card-body"><span class="text-secondary">Filtered expenses</span><div class="fs-4 fw-semibold">₱{{ total_expenses|floatformat:2 }}</div></div></div></div>
+  <div class="col-sm-6"><div class="card border-0 shadow-sm"><div class="card-body"><span class="text-secondary">Filtered income</span><div class="fs-4 fw-semibold text-success">₱{{ total_income|floatformat:2 }}</div></div></div></div>
+</div>
+<form method="get" class="card border-0 shadow-sm mb-4"><div class="card-body">
+  <div class="row g-3">
+    {% for field in form %}
+    <div class="col-6 col-lg-3">
+      <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+      {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="d-flex gap-2 mt-3"><button class="btn btn-primary" type="submit">Apply filters</button><a class="btn btn-outline-secondary" href="{% url 'transaction_list' %}">Clear</a></div>
+</div></form>
+{% if rows %}
+<div class="list-group shadow-sm">
+  {% for row in rows %}
+  <div class="list-group-item p-3">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <div class="rounded-circle bg-light text-center p-2" style="width: 2.75rem">{{ row.label|first }}</div>
+      <div class="flex-grow-1">
+        <a href="{% url row.detail_url row.record.pk %}" class="fw-semibold text-decoration-none">{{ row.label }}</a>
+        <div class="small text-secondary">{{ row.record.description|truncatechars:55 }} · {{ row.record.date|date:"F j, Y" }} · {{ row.record.get_payment_method_display }}</div>
+      </div>
+      <span class="badge {% if row.kind == 'income' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ row.kind|title }}</span>
+      <div class="fw-semibold text-nowrap {% if row.kind == 'income' %}text-success{% endif %}">{% if row.kind == "income" %}+{% else %}−{% endif %}₱{{ row.record.amount|floatformat:2 }}</div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-secondary" href="{% url row.edit_url row.record.pk %}">Edit</a>
+        <a class="btn btn-sm btn-outline-danger" href="{% url row.delete_url row.record.pk %}">Delete</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% if page_obj.has_other_pages %}
+<nav class="mt-4" aria-label="Transaction pages"><ul class="pagination justify-content-center">
+  {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+  <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+  {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% else %}
+<div class="text-center bg-white rounded shadow-sm p-5"><h2 class="h4">No matching transactions</h2><p class="text-secondary">Try changing the filters, or add your first transaction.</p><a class="btn btn-primary" href="{% url 'expense_create' %}">Add an expense</a></div>
+{% endif %}
+{% endblock %}

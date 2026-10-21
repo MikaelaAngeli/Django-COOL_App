@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Monthly budget | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+  <div><div class="dashboard-eyebrow mb-2">Plan your spending</div><h1 class="h2 mb-1">Monthly budget</h1><p class="text-secondary mb-0">Review daily spending and set a limit for {{ period_label }}.</p></div>
+  <a class="btn btn-outline-primary" href="{% url 'expense_list' %}?month={{ period|date:'Y-m' }}">Back to overview</a>
+</div>
+<div class="d-flex flex-column gap-4">
+  <section class="dashboard-card p-4" aria-label="Set monthly budget">
+    <div class="dashboard-eyebrow mb-1">Monthly limit</div><h2 class="h5 mb-4">Set your budget</h2>
+    <form method="post" novalidate>{% csrf_token %}
+      <div class="row g-3 align-items-end">
+        {% for field in form %}<div class="col-12 col-md-6 mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endfor %}
+        <div class="col-12 col-md-auto mb-3"><button class="btn btn-primary" type="submit">Save budget</button></div>
+      </div>
+    </form>
+  </section>
+  <section class="dashboard-card p-3 p-md-4" aria-label="Monthly expense calendar">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'budget_update' %}?month={{ previous_month }}" aria-label="Previous month">←</a>
+        <h2 class="h5 mb-0">{{ period_label }}</h2>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'budget_update' %}?month={{ next_month }}" aria-label="Next month">→</a>
+      </div>
+      <div class="calendar-grid" role="grid" aria-label="{{ period_label }} spending calendar">
+        <div class="calendar-weekdays" aria-hidden="true">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        {% for week in calendar_weeks %}
+        <div class="calendar-week" role="row">
+          {% for cell in week %}
+          <div class="calendar-day {% if not cell.day %}calendar-day-empty{% endif %} {% if cell.is_today %}calendar-day-today{% endif %}" role="gridcell">
+            {% if cell.day %}
+              {% if cell.has_expenses %}
+              <a class="calendar-day-link" href="{% url 'transaction_list' %}?date_from={{ cell.date }}&date_to={{ cell.date }}" aria-label="{{ cell.date }}: ₱{{ cell.amount|floatformat:2 }} expenses">
+                <span class="calendar-day-number">{{ cell.day }}</span>
+                <span class="calendar-day-total">₱{{ cell.amount|floatformat:2 }}</span>
+              </a>
+              {% else %}
+              <span class="calendar-day-number">{{ cell.day }}</span>
+              {% endif %}
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="small text-secondary mt-3">Select a day with spending to view its transactions.</div>
+  </section>
+</div>
+<style>
+  .calendar-weekdays, .calendar-week { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.35rem; }
+  .calendar-weekdays { margin-bottom:.5rem; text-align:center; color:#98a7b8; font-size:.72rem; font-weight:700; }
+  .calendar-day { min-height:4.5rem; border:1px solid #edf0f2; border-radius:.65rem; padding:.45rem; background:#fff; }
+  .calendar-day-empty { border-color:transparent; background:transparent; }
+  .calendar-day-today { border-color:var(--app-primary); background:var(--app-soft); }
+  .calendar-day-number { display:block; color:#344054; font-size:.85rem; }
+  .calendar-day-total { display:block; margin-top:.35rem; color:var(--app-primary); font-size:.68rem; font-weight:700; }
+  .calendar-day-link { display:block; height:100%; text-decoration:none; }
+  @media(max-width:575.98px) {
+    .calendar-weekdays, .calendar-week { gap:.2rem; }
+    .calendar-day { min-height:3.8rem; padding:.3rem; }
+    .calendar-day-total { font-size:.52rem; }
+  }
+</style>
+{% endblock %}

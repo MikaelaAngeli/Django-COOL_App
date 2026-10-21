@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Profile | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <div class="dashboard-eyebrow mb-2">Account</div>
+  <h1 class="h2 mb-1">Your profile</h1>
+  <p class="text-secondary mb-0">Manage your account and app preferences.</p>
+</div>
+<section class="dashboard-card p-4 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="palette-mark rounded-circle d-inline-flex align-items-center justify-content-center fw-semibold" style="width:3.5rem;height:3.5rem">BB</span>
+    <div>
+      <h2 class="h5 mb-1">{{ user.get_full_name|default:user.username }}</h2>
+      <div class="text-secondary">{{ user.email|default:user.username }}</div>
+    </div>
+  </div>
+</section>
+<section class="dashboard-card p-4 mb-4">
+  <div class="dashboard-eyebrow mb-1">Appearance</div>
+  <h2 class="h5 mb-2">Theme</h2>
+  <p class="text-secondary">Choose the appearance that feels right for you. Your choice is saved in this browser.</p>
+  <button class="btn btn-outline-primary theme-toggle" type="button" data-theme-toggle aria-pressed="false">☀️ Switch to light mode</button>
+  <hr class="my-4">
+  <h3 class="h6 mb-1">Color palette</h3>
+  <p class="text-secondary small">Choose a palette to update the app colors. Your selection is saved in this browser.</p>
+  <div class="palette-picker" data-palette-picker aria-label="Available color palettes"></div>
+</section>
+<section class="dashboard-card p-4">
+  <div class="dashboard-eyebrow mb-1">Session</div>
+  <h2 class="h5 mb-2">Log out</h2>
+  <p class="text-secondary">You can sign back in any time to manage your expenses.</p>
+  <form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button class="btn btn-outline-danger" type="submit">Log out</button>
+  </form>
+</section>
+{% endblock %}

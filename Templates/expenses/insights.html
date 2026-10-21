@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Insights | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+  <div><h1 class="h2 mb-1">Spending insights</h1><p class="text-secondary mb-0">See where your money goes in {{ period_label }}.</p></div>
+  <div class="d-flex gap-2"><a class="btn btn-outline-secondary" href="?month={{ previous_month }}">← Previous</a><a class="btn btn-outline-secondary" href="?month={{ next_month }}">Next →</a></div>
+</div>
+<div class="card border-0 shadow-sm mb-4"><div class="card-body p-4">
+  <h2 class="h5">Total spent</h2><div class="display-6 fw-bold mb-3">₱{{ total|floatformat:2 }}</div>
+  {% if category_totals %}<div class="row g-4 align-items-center">
+    <div class="col-lg-6"><canvas id="categoryChart" aria-label="Spending by category chart"></canvas></div>
+    <div class="col-lg-6">
+      {% for item in category_totals %}
+      <div class="mb-3">
+        <div class="d-flex justify-content-between gap-3"><span>{{ item.label }}</span><span class="text-nowrap">₱{{ item.total|floatformat:2 }} · {{ item.percentage|floatformat:1 }}%</span></div>
+        <div class="progress mt-1"><div class="progress-bar" role="progressbar" style="width: {{ item.percentage }}%" aria-valuenow="{{ item.percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>{% else %}
+  <div class="text-center py-4"><h3 class="h5">Your spending story starts here.</h3><p class="text-secondary">Add an expense in {{ period_label }} to see your category breakdown.</p><a class="btn btn-primary" href="{% url 'expense_create' %}">＋ Add your first expense</a></div>
+  {% endif %}
+</div></div>
+{% if category_totals %}
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_values|json_script:"chart-values" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = JSON.parse(document.getElementById("chart-labels").textContent);
+  const values = JSON.parse(document.getElementById("chart-values").textContent);
+  const palette = window.budgetBuddyPalettes[document.documentElement.dataset.palette];
+  new Chart(document.getElementById("categoryChart"), {
+    type: "doughnut",
+    data: { labels, datasets: [{ data: values, backgroundColor: palette.colors }] },
+    options: { responsive: true, plugins: { legend: { position: "bottom" } } }
+  });
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Delete income | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-7"><div class="card border-0 shadow-sm"><div class="card-body p-4">
+  <h1 class="h3">Delete income?</h1><p>Are you sure you want to delete income #{{ income.pk }} for <strong>₱{{ income.amount|floatformat:2 }}</strong>? This cannot be undone.</p>
+  <form method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Yes, delete</button> <a class="btn btn-outline-secondary" href="{% url 'income_detail' income.pk %}">Cancel</a></form>
+</div></div></div></div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Your expenses | BudgetBuddy{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h2 mb-1">Your expenses</h1>
+    <p class="text-secondary mb-0">Keep track of where your money goes.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'expense_create' %}">Add expense</a>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-md-6"><div class="card border-0 shadow-sm h-100"><div class="card-body">
+    <div class="text-secondary">All expenses total</div><div class="fs-3 fw-semibold">₱{{ total_all|floatformat:2 }}</div>
+  </div></div></div>
+  <div class="col-md-6"><div class="card border-0 shadow-sm h-100"><div class="card-body">
+    <div class="text-secondary">{% if selected_category %}{{ selected_category }} total{% else %}Current view total{% endif %}</div>
+    <div class="fs-3 fw-semibold">₱{{ total_filtered|floatformat:2 }}</div>
+  </div></div></div>
+</div>
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-sm-5 col-md-4">
+    <label class="form-label" for="category">Filter by category</label>
+    <select class="form-select" id="category" name="category">
+      <option value="">All categories</option>
+      {% for value, label in categories %}<option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Apply filter</button></div>
+  {% if selected_category %}<div class="col-auto"><a class="btn btn-link" href="{% url 'expense_list' %}">Clear</a></div>{% endif %}
+</form>
+{% if expenses %}
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light"><tr><th>Expense ID</th><th>Date</th><th>Category</th><th>Description</th><th>Payment method</th><th class="text-end">Amount</th></tr></thead>
+      <tbody>
+        {% for expense in expenses %}
+        <tr>
+          <td><a href="{% url 'expense_detail' expense.pk %}">#{{ expense.pk }}</a></td>
+          <td>{{ expense.date|date:"M j, Y" }}</td><td>{{ expense.get_category_display }}</td>
+          <td>{{ expense.description|truncatechars:60 }}</td><td>{{ expense.get_payment_method_display }}</td>
+          <td class="text-end text-nowrap">₱{{ expense.amount|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if page_obj.has_other_pages %}
+<nav class="mt-4" aria-label="Expense pages"><ul class="pagination justify-content-center">
+  {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?category={{ selected_category|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+  <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+  {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?category={{ selected_category|urlencode }}&page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% else %}
+<div class="text-center bg-white rounded shadow-sm p-5">
+  <h2 class="h4">No expenses found</h2>
+  <p class="text-secondary">{% if selected_category %}There are no expenses in this category yet.{% else %}Start tracking your spending by adding your first expense.{% endif %}</p>
+  {% if not selected_category %}<a class="btn btn-primary" href="{% url 'expense_create' %}">Add your first expense</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
